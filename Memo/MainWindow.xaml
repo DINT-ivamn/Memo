@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Memo"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="600" Icon="quiz.ico"
+        Title="MainWindow" Height="700" Width="600" Icon="quiz.ico"
         Background="ForestGreen" MinWidth="600" MinHeight="450">
 
     <Window.Resources>
@@ -34,9 +34,9 @@
             <Setter Property="FontFamily" Value="Comic Sans MS"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
-        <Style TargetType="{x:Type Border}">
+        <Style TargetType="{x:Type Border}" x:Key="BordeTarjetas">
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Margin" Value="3"/>
             <Setter Property="BorderBrush" Value="Black"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="5"/>
@@ -50,8 +50,12 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style TargetType="{x:Type Border}" x:Key="Grueso"  BasedOn="{StaticResource {x:Type Border}}">
+        <Style TargetType="{x:Type Border}" x:Key="TarjetasVolteadas" BasedOn="{StaticResource BordeTarjetas}">
+            <Setter Property="Background" Value="White"/>
+        </Style>
+        <Style TargetType="{x:Type Border}" x:Key="Grueso"  BasedOn="{StaticResource BordeTarjetas}">
             <Setter Property="BorderThickness" Value="5"/>
+            <Setter Property="Padding" Value="10"/>
             <Setter Property="Background" Value="White"/>
         </Style>
     </Window.Resources>
@@ -68,8 +72,8 @@
         </Border>
         <Border DockPanel.Dock="Bottom" Style="{StaticResource Grueso}">
             <DockPanel LastChildFill="True">
-                <Button x:Name="MostrarButton" Click="MostrarButton_Click" DockPanel.Dock="Right">Mostrar</Button>
-                <ProgressBar Minimum="0" Maximum="100" x:Name="BarraProgressBar">
+                <Button x:Name="MostrarButton" Click="MostrarButton_Click" DockPanel.Dock="Right" IsEnabled="False">Mostrar</Button>
+                <ProgressBar Minimum="0" x:Name="BarraProgressBar">
                 </ProgressBar>
             </DockPanel>
         </Border>
