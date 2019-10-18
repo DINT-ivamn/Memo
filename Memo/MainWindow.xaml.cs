@@ -25,31 +25,31 @@ namespace Memo
 
         private DispatcherTimer Timer { get; set; }
 
+        private bool JuegoAcabado;
+        private bool JuegoForzado;
+
+        private List<char> Simbolos { get; set; }
+
         private const string SIMBOLO_INICIAL_TARJETA = "s";
         private const int DIFICULTAD_BAJA = 3;
         private const int DIFICULTAD_MEDIA = 4;
         private const int DIFICULTAD_ALTA = 5;
         private const int COLUMNAS = 4;
         private const int TIEMPO_VISUALIZACION = 1;
+        private const int SIMBOLOS_MAXIMOS = 20;
+        private const bool FLAG_REVELADO = true;
 
         public MainWindow()
         {
             InitializeComponent();
+            JuegoAcabado = false;
             Timer = new DispatcherTimer()
             {
                 Interval = TimeSpan.FromSeconds(TIEMPO_VISUALIZACION)
             };
             Timer.Tick += Timer_Tick;
         }
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            // Vuelven las cartas al estado anterior y se habilitan
-            RestablerEstado();
-            Timer.Stop();
-            HabilitarTarjetas();
-        }
-
+         
         private void DeshabilitarTarjetas()
         {
             // Se deshabilitan todas las tarjetas
@@ -59,7 +59,7 @@ namespace Memo
             }
         }
 
-        private void HabilitarTarjetas()
+        private void HabilitarTarjetasNoEncontradas()
         {
             // Se habilitan todas menos las que tienen algo en el Tag, es decir, las que ya han sido averiguadas
             foreach (var item in ContenedorCartasGrid.Children)
@@ -69,29 +69,35 @@ namespace Memo
             }
         }
 
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            // Vuelven las cartas al estado anterior y se habilitan
+            if (!JuegoAcabado)
+            {
+                RestablerEstado();
+            }
+            Timer.Stop();
+            HabilitarTarjetasNoEncontradas();
+        }
+
         private void MostrarButton_Click(object sender, RoutedEventArgs e)
         {
+            JuegoForzado = true;
+            JuegoAcabado = true;
             DeshabilitarTarjetas();
             BarraProgressBar.Value = BarraProgressBar.Maximum;
             RevelarTarjetas();
             ComprobarFinJuego();
         }
 
-        private void RevelarTarjetas()
-        {
-            foreach (var item in ContenedorCartasGrid.Children)
-            {
-                RevelarTarjeta((Border)item);
-            }
-        }
-
         private void InicarButton_Click(object sender, RoutedEventArgs e)
         {
             // Por si es una partida nueva en la misma ejecución
             LimpiarReferencias();
+            JuegoForzado = false;
+            JuegoAcabado = false;
 
-            // Símbolos disponibles
-            List<char> simbolos = "aabbccddeeffgghhiijj".ToCharArray().ToList();
+            GenerarCaracteresAleatoriosEnLista();
 
             // Establecer dificultad
             int dificultad = DIFICULTAD_MEDIA;
@@ -126,7 +132,7 @@ namespace Memo
             Random r = new Random();
 
             // Eliminar sómbolos que no necesito
-            simbolos.RemoveRange(simbolosTotales, simbolos.Count - simbolosTotales);
+            Simbolos.RemoveRange(simbolosTotales, Simbolos.Count - simbolosTotales);
 
             // Crear lar cartas y crear filas
             for (int i = 0; i < dificultad; i++)
@@ -142,9 +148,9 @@ namespace Memo
                     };
 
                     // Se le asigna un Tag aleatorio
-                    int aleatorio = r.Next(simbolos.Count);
-                    textBlock.Tag = simbolos[aleatorio];
-                    simbolos.RemoveAt(aleatorio);
+                    int aleatorio = r.Next(Simbolos.Count);
+                    textBlock.Tag = Simbolos[aleatorio];
+                    Simbolos.RemoveAt(aleatorio);
 
                     // Creación del resto de elementos
                     Viewbox viewbox = new Viewbox() { Child = textBlock };
@@ -154,7 +160,6 @@ namespace Memo
                         Child = viewbox,
                         Style = (Style)Resources["BordeTarjetas"]
                     };
-                    border.MouseDown += Border_MouseDown;
 
                     // Posicionamiento dentro del grid
                     grid.Children.Add(border);
@@ -165,13 +170,6 @@ namespace Memo
 
             // Habilitamos la opción de mostrar
             MostrarButton.IsEnabled = true;
-        }
-
-        private void RevelarTarjeta(Border b)
-        {
-            b.Style = (Style)Resources["TarjetasVolteadas"];
-            TextBlock t = (TextBlock)((Viewbox)b.Child).Child;
-            t.Text = ((char)t.Tag).ToString();
         }
 
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
@@ -185,12 +183,41 @@ namespace Memo
             ComprobarCartas();
         }
 
-        private bool CartasSeleccionadas()
+        private void GenerarCaracteresAleatoriosEnLista()
+        {
+            Simbolos = new List<char>();
+            Random r = new Random();
+            while (Simbolos.Count < SIMBOLOS_MAXIMOS)
+            {
+                char c = (char)r.Next(65, 123);
+                if (!Simbolos.Contains(c))
+                {
+                    Simbolos.AddRange(new char[]{ c, c});
+                }
+            }
+        }
+
+        private void RevelarTarjetas()
+        {
+            foreach (var item in ContenedorCartasGrid.Children)
+            {
+                RevelarTarjeta((Border)item);
+            }
+        }
+
+        private void RevelarTarjeta(Border b)
+        {
+            b.Style = (Style)Resources["TarjetasVolteadas"];
+            TextBlock t = (TextBlock)((Viewbox)b.Child).Child;
+            t.Text = ((char)t.Tag).ToString();
+        }
+
+        private bool TarjetasSeleccionadas()
         {
             return T1 != null && T2 != null;
         }
 
-        private bool CartasIguales()
+        private bool TarjetasIguales()
         {
             TextBlock t1 = (TextBlock)((Viewbox)T1.Child).Child;
             TextBlock t2 = (TextBlock)((Viewbox)T2.Child).Child;
@@ -205,6 +232,7 @@ namespace Memo
 
         private void RestablerEstado()
         {
+            // Volver a ocultar tarjetas
             TextBlock t1 = (TextBlock)((Viewbox)T1.Child).Child;
             TextBlock t2 = (TextBlock)((Viewbox)T2.Child).Child;
             t1.Text = SIMBOLO_INICIAL_TARJETA;
@@ -217,21 +245,21 @@ namespace Memo
         private void ComprobarCartas()
         {
             // Si se seleccionan dos cartas distintas
-            if (CartasSeleccionadas() && !CartasIguales())
+            if (TarjetasSeleccionadas() && !TarjetasIguales())
             {
                 // Se deshabiltan hasta que pasen unos segundos
                 DeshabilitarTarjetas();
                 Timer.Start();
             }
             // Si son iguales
-            else if (CartasSeleccionadas() && CartasIguales())
+            else if (TarjetasSeleccionadas() && TarjetasIguales())
             {
-                // Se deshabilitan y coloco flag a true, servirá para no volverlo a habilitar
-                // con el metodo Habilitar
+                // Se deshabilitan las tarjetas y coloco flag a true, servirá para no volverlo a habilitar con el método
+                // con el metodo HabilitarTarjetas
                 T1.IsEnabled = false;
-                T1.Tag = true;
+                T1.Tag = FLAG_REVELADO;
                 T2.IsEnabled = false;
-                T2.Tag = true;
+                T2.Tag = FLAG_REVELADO;
                 LimpiarReferencias();
                 ActualizarBarraProgreso();
             }
@@ -247,7 +275,11 @@ namespace Memo
         {
             if (BarraProgressBar.Value == BarraProgressBar.Maximum)
             {
-                MessageBox.Show("Partida finalizada.", "Fin", MessageBoxButton.OK, MessageBoxImage.Information);
+                JuegoAcabado = true;
+                if (!JuegoForzado)
+                {
+                    MessageBox.Show("Partida finalizada.", "Fin", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
                 MostrarButton.IsEnabled = false;
             }
         }

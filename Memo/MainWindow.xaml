@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Memo"
         mc:Ignorable="d"
-        Title="MainWindow" Height="700" Width="600" Icon="quiz.ico"
-        Background="ForestGreen" MinWidth="600" MinHeight="450">
+        Title="Memory" Height="700" Width="600" Icon="quiz.ico"
+        Background="ForestGreen" MinWidth="500" MinHeight="520">
 
     <Window.Resources>
         <Style TargetType="{x:Type TextBlock}">
@@ -35,6 +35,7 @@
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
         <Style TargetType="{x:Type Border}" x:Key="BordeTarjetas">
+            <EventSetter Event="MouseDown" Handler="Border_MouseDown"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Margin" Value="3"/>
             <Setter Property="BorderBrush" Value="Black"/>
@@ -52,8 +53,12 @@
         </Style>
         <Style TargetType="{x:Type Border}" x:Key="TarjetasVolteadas" BasedOn="{StaticResource BordeTarjetas}">
             <Setter Property="Background" Value="White"/>
+            <Setter Property="IsEnabled" Value="False"/>
         </Style>
-        <Style TargetType="{x:Type Border}" x:Key="Grueso"  BasedOn="{StaticResource BordeTarjetas}">
+        <Style TargetType="{x:Type Border}" x:Key="Grueso">
+            <Setter Property="BorderBrush" Value="GreenYellow"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="BorderThickness" Value="5"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Background" Value="White"/>
