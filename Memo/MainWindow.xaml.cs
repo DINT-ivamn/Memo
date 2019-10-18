@@ -28,15 +28,17 @@ namespace Memo
         private bool JuegoAcabado;
         private bool JuegoForzado;
 
+        private int DificultadElegida { get; set; }
+
         private List<char> Simbolos { get; set; }
 
         private const string SIMBOLO_INICIAL_TARJETA = "s";
+        // Dificultad = Numero de filas del juego
         private const int DIFICULTAD_BAJA = 3;
         private const int DIFICULTAD_MEDIA = 4;
         private const int DIFICULTAD_ALTA = 5;
         private const int COLUMNAS = 4;
         private const int TIEMPO_VISUALIZACION = 1;
-        private const int SIMBOLOS_MAXIMOS = 20;
         private const bool FLAG_REVELADO = true;
 
         public MainWindow()
@@ -97,21 +99,21 @@ namespace Memo
             JuegoForzado = false;
             JuegoAcabado = false;
 
-            GenerarCaracteresAleatoriosEnLista();
-
             // Establecer dificultad
-            int dificultad = DIFICULTAD_MEDIA;
+            DificultadElegida = DIFICULTAD_MEDIA;
             if (BajaRadioButton.IsChecked == true)
             {
-                dificultad = DIFICULTAD_BAJA;
+                DificultadElegida = DIFICULTAD_BAJA;
             }
             else if (AltaRadioButton.IsChecked == true)
             {
-                dificultad = DIFICULTAD_ALTA;
+                DificultadElegida = DIFICULTAD_ALTA;
             }
 
-            int parejas = dificultad * 2;
-            int simbolosTotales = parejas * 2;
+            // Después de saber la dificultad...
+            GenerarCaracteresAleatoriosEnLista();
+
+            int parejas = DificultadElegida * 2;
 
             // Se reinicia la barra y se establece el objetivo de parejas
             BarraProgressBar.Maximum = parejas;
@@ -131,11 +133,8 @@ namespace Memo
             // Semilla
             Random r = new Random();
 
-            // Eliminar sómbolos que no necesito
-            Simbolos.RemoveRange(simbolosTotales, Simbolos.Count - simbolosTotales);
-
             // Crear lar cartas y crear filas
-            for (int i = 0; i < dificultad; i++)
+            for (int i = 0; i < DificultadElegida; i++)
             {
                 grid.RowDefinitions.Add(new RowDefinition());
                 for (int j = 0; j < COLUMNAS; j++)
@@ -187,7 +186,8 @@ namespace Memo
         {
             Simbolos = new List<char>();
             Random r = new Random();
-            while (Simbolos.Count < SIMBOLOS_MAXIMOS)
+            int simbolos = DificultadElegida * 4;
+            while (Simbolos.Count < simbolos)
             {
                 char c = (char)r.Next(65, 123);
                 if (!Simbolos.Contains(c))
